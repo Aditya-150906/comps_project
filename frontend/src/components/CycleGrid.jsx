@@ -2,102 +2,106 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ENDPOINTS } from '../api/config';
 import './CycleGrid.css';
-import { Battery, Zap, Shield, ChevronRight, Terminal } from 'lucide-react';
+import { Battery, Zap, Shield, ChevronRight } from 'lucide-react';
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  })
+};
 
 const CycleCard = ({ cycle, index }) => (
   <motion.div 
     className="cycle-card glass-panel"
-    initial={{ opacity: 0, y: 30 }}
-    whileInView={{ opacity: 1, y: 0 }}
+    custom={index}
+    initial="hidden"
+    whileInView="visible"
     viewport={{ once: true, margin: "-50px" }}
-    transition={{ duration: 0.6, delay: index * 0.1 }}
-    whileHover={{ y: -5 }}
+    whileHover={{ y: -8 }}
   >
     <div className="card-image-box">
-      <img src={cycle.img} alt={cycle.name} className="card-image" />
-      <div className="card-badge">{cycle.type}</div>
+      <img 
+        src={cycle.img || "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&q=80&w=800"} 
+        alt={cycle.name} 
+        className="card-image" 
+      />
+      <div className="card-badge">{cycle.type || 'Electric'}</div>
     </div>
+
     <div className="card-content">
       <div className="card-header">
-        <h3>{cycle.name}</h3>
-        <p className="price"><span className="text-gradient">${cycle.price}</span>/hr</p>
+        <h3 className="card-title">{cycle.name || 'Premium e-Bike'}</h3>
+        <div className="card-price">
+          <span className="price-value">${cycle.price || '15'}</span>
+          <span className="price-unit">/hr</span>
+        </div>
       </div>
-      <div className="card-specs">
-        {cycle.range !== 'N/A' && (
-          <div className="spec"><Battery size={14}/> {cycle.range}</div>
+
+      <div className="card-stats">
+        {cycle.range_km && (
+          <div className="stat-item">
+            <Battery size={16} />
+            <span>{cycle.range_km} km</span>
+          </div>
         )}
-        {cycle.speed !== 'N/A' && (
-          <div className="spec"><Zap size={14}/> {cycle.speed}</div>
+        {cycle.speed && (
+          <div className="stat-item">
+            <Zap size={16} />
+            <span>{cycle.speed} km/h</span>
+          </div>
         )}
-        <div className="spec"><Shield size={14}/> Secured</div>
+        <div className="stat-item">
+          <Shield size={16} />
+          <span>Insured</span>
+        </div>
       </div>
-      <button className="btn btn-glass w-full mt-4 flex-between card-btn">
-        <span>INIT_BOOKING</span> <ChevronRight size={16}/>
-      </button>
+      
+      <motion.button 
+        className="book-btn"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        INIT_BOOKING
+        <ChevronRight size={18} />
+      </motion.button>
     </div>
   </motion.div>
 );
 
 const CycleGrid = () => {
   const [cycles, setCycles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchCycles = async () => {
-      try {
-        // Fetch from backend using centralized config
-        const response = await fetch(ENDPOINTS.CYCLES);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch cycles: ${response.statusText || response.status}`);
-        }
-        const data = await response.json();
-        setCycles(data);
-      } catch (err) {
-        console.error('API Error:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCycles();
+    fetch(ENDPOINTS.CYCLES)
+      .then(res => res.json())
+      .then(data => setCycles(data))
+      .catch(err => console.error("Failed to fetch cycles", err));
   }, []);
 
+  const displayData = Array.isArray(cycles) && cycles.length > 0 
+    ? cycles 
+    : [
+        { id: 1, name: 'City Cruiser X', price: 15, range_km: 45, speed: 25, type: 'Electric', img: 'https://images.unsplash.com/photo-1571188654261-29e28f3bb222?auto=format&fit=crop&q=80&w=800' },
+        { id: 2, name: 'Mountain Pro', price: 22, range_km: 60, speed: 30, type: 'Performance', img: 'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&q=80&w=800' },
+        { id: 3, name: 'Urban Glide', price: 12, range_km: 35, speed: 20, type: 'Standard', img: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=800' },
+        { id: 4, name: 'Speedster V2', price: 28, range_km: 80, speed: 45, type: 'Sport', img: 'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&q=80&w=800' }
+      ];
+
   return (
-    <section className="cycle-grid-section" id="fleet">
-      <div className="section-header">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="section-badge">
-            <Terminal size={14} className="badge-icon" />
-            <span>sys.fleet_inventory</span>
-          </div>
-          <h2 className="section-title">Explore The <span className="text-gradient">Hardware</span></h2>
-          <p className="section-subtitle">High-performance cycles curated for every environment.</p>
-        </motion.div>
-      </div>
-      
+    <div className="cycle-grid-section">
       <div className="grid-container">
-        {loading ? (
-          <p style={{ textAlign: 'center', width: '100%', color: 'var(--text-secondary)' }}>Loading fleet data...</p>
-        ) : error ? (
-          <div style={{ textAlign: 'center', width: '100%', color: '#ff4d4f', padding: '20px', background: 'rgba(255, 77, 79, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 77, 79, 0.3)' }}>
-            <p style={{ fontWeight: 'bold' }}>API Connection Error</p>
-            <p>{error}</p>
-            <p style={{ fontSize: '0.9rem', marginTop: '10px' }}>Make sure the backend is running on http://localhost:5000</p>
-          </div>
-        ) : cycles.length === 0 ? (
-          <p style={{ textAlign: 'center', width: '100%', color: 'var(--text-secondary)' }}>No cycles found in the fleet.</p>
-        ) : (
-          cycles.map((c, idx) => <CycleCard cycle={c} key={c._id || c.id} index={idx} />)
-        )}
+        {displayData.map((c, idx) => (
+          <CycleCard key={c.id || idx} cycle={c} index={idx} />
+        ))}
       </div>
-    </section>
+    </div>
   );
 };
 

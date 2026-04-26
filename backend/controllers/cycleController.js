@@ -1,41 +1,43 @@
-const Cycle = require('../models/Cycle');
+const db = require('../config/db');
 
 // Get all cycles
-exports.getCycles = async (req, res) => {
-  try {
-    const cycles = await Cycle.find();
-    res.status(200).json(cycles);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+exports.getCycles = (req, res) => {
+  const query = "SELECT * FROM cycles";
 
-// Get a single cycle
-exports.getCycleById = async (req, res) => {
-  try {
-    const cycle = await Cycle.findById(req.params.id);
-    if (!cycle) return res.status(404).json({ message: 'Cycle not found' });
-    res.status(200).json(cycle);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ message: err.message });
 
-// Create a new cycle (for admin/seeding)
-exports.createCycle = async (req, res) => {
-  const cycle = new Cycle({
-    name: req.body.name,
-    type: req.body.type,
-    price: req.body.price,
-    range: req.body.range,
-    speed: req.body.speed,
-    img: req.body.img
+    res.status(200).json(results);
   });
+};
 
-  try {
-    const newCycle = await cycle.save();
-    res.status(201).json(newCycle);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+// Get single cycle
+exports.getCycleById = (req, res) => {
+  const query = "SELECT * FROM cycles WHERE id = ?";
+
+  db.query(query, [req.params.id], (err, results) => {
+    if (err) return res.status(500).json({ message: err.message });
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Cycle not found" });
+    }
+
+    res.status(200).json(results[0]);
+  });
+};
+
+// Create cycle
+exports.createCycle = (req, res) => {
+  const { name, type, price, range, speed, img } = req.body;
+
+  const query = `
+    INSERT INTO cycles (name, type, price, range_km, speed, img)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(query, [name, type, price, range, speed, img], (err, result) => {
+    if (err) return res.status(400).json({ message: err.message });
+
+    res.status(201).json({ message: "Cycle added" });
+  });
 };
