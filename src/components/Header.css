@@ -1,0 +1,97 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: var(--sp-4) var(--sp-6);
+  transition: all var(--transition-normal);
+  background: transparent;
+}
+
+.header-scrolled {
+  padding: var(--sp-3) var(--sp-6);
+  /* The glass-panel utility class from index.css applies the background/blur */
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.brand-icon {
+  color: var(--accent-primary);
+}
+
+.nav-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+  margin: 0 var(--sp-4);
+  letter-spacing: 0.05em;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.mobile-toggle {
+  display: none;
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    padding: var(--sp-6);
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .desktop-nav.open {
+    display: flex;
+  }
+
+  .desktop-nav .nav-link {
+    margin: var(--sp-3) 0;
+  }
+
+  .mobile-toggle {
+    display: block;
+  }
+
+  .login-btn, .sign-up-btn {
+    display: none;
+  }
+}

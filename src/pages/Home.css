@@ -1,0 +1,5 @@
+/* Home page specifics if any */
+.home {
+  display: flex;
+  flex-direction: column;
+}
